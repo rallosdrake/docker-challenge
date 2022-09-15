@@ -1,0 +1,36 @@
+<VirtualHost *:443>
+    ServerName %HOST_NAME%.ampdev.co
+
+    LogLevel info
+    ErrorLog %APACHE_LOG_DIR%/error.log
+    CustomLog %APACHE_LOG_DIR%/access.log combined
+
+    SSLEngine on
+    SSLCertificateFile      /etc/ssl/certs/ampdev.co.crt
+    SSLCertificateKeyFile	/etc/ssl/private/ampdev.co.key
+
+    DocumentRoot %DOCUMENT_ROOT%/Website
+    
+    ServerAdmin webmaster@localhost
+
+    LogLevel info
+    ErrorLog %APACHE_LOG_DIR%/error.log
+    Header always note X-Log-Correlation-Id amp_correlation_id
+    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\" \"%{amp_correlation_id}n\"" customlogformat
+    CustomLog %APACHE_LOG_DIR%/access.log customlogformat
+
+    <FilesMatch \.php$>
+        SetHandler "proxy:fcgi://127.0.0.1:9000"
+    </FilesMatch>
+
+
+    <Directory %DOCUMENT_ROOT%/Website>
+        DirectoryIndex index.php
+        Require all granted
+        # This above line is required for local OSX development
+        AllowOverride None
+        Header set X-Robots-Tag "noindex, nofollow"
+        Options FollowSymLinks
+        Options +FollowSymLinks
+    </Directory>
+</VirtualHost>
